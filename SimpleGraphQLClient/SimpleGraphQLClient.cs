@@ -10,19 +10,13 @@ namespace SimpleGraphQLClient
     public class SimpleGraphQLClient
     {
         private string _GraphQLApiUrl;
-        private string _GraphQLApiUser;
-        private string _GraphQLApiPass;
-        private Dictionary<string, string> _AdditionalHeaders;
 
-        public SimpleGraphQLClient(string GraphQLApiUrl, string GraphQLApiUser = null, string GraphQLApiPass = null, Dictionary<string, string> AdditionalHeaders = null)
+        public SimpleGraphQLClient(string GraphQLApiUrl)
         {
             _GraphQLApiUrl = GraphQLApiUrl;
-            _GraphQLApiUser = GraphQLApiUser;
-            _GraphQLApiPass = GraphQLApiPass;
-            _AdditionalHeaders = AdditionalHeaders;
         }
 
-        public dynamic Execute(string query, object variables)
+        public dynamic Execute(string query, object variables = null, Dictionary<string, string> additionalHeaders = null)
         {
             try
             {
@@ -37,7 +31,7 @@ namespace SimpleGraphQLClient
 
                 request.AddBody(requestBody);
 
-                return CallApiServer<dynamic>(request);
+                return CallApiServer<dynamic>(request, additionalHeaders);
             }
             catch (Exception exception)
             {
@@ -48,18 +42,13 @@ namespace SimpleGraphQLClient
             }
         }
 
-        private T CallApiServer<T>(RestRequest request) where T : new()
+        private T CallApiServer<T>(RestRequest request, Dictionary<string, string> additionalHeaders) where T : new ()
         {
             var client = new RestClient(_GraphQLApiUrl);
 
-            if (!string.IsNullOrEmpty(_GraphQLApiUser) && !string.IsNullOrEmpty(_GraphQLApiPass))
+            if (additionalHeaders != null && additionalHeaders.Count > 0)
             {
-                client.Authenticator = new HttpBasicAuthenticator(_GraphQLApiUser, _GraphQLApiPass);
-            }
-
-            if (_AdditionalHeaders != null && _AdditionalHeaders.Count > 0)
-            {
-                foreach (var AdditionalHeader in _AdditionalHeaders)
+                foreach (var AdditionalHeader in additionalHeaders)
                 {
                     request.AddParameter(AdditionalHeader.Key, AdditionalHeader.Value, ParameterType.GetOrPost);
                 }
