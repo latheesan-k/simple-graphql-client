@@ -11,35 +11,41 @@ namespace SimpleGraphQLClient.Test
             #region Register user
 
             var query = @"
-                mutation {
-                    signup(
-                        email: $email
+                mutation signup (
+                    $fullName: String!
+                    $email: String!
+                    $password: String!
+                    $username: String!
+                    $avatar: String
+                ) {
+                    signup (
                         fullName: $fullName
+                        email: $email
                         password: $password
-                        avatar: $avatar
                         username: $username
+                        avatar: $avatar
                     ) {
                         token
                     }
                 }
             ";
 
-            dynamic signup = client.Execute(query, new
+            try
             {
-                email = "test-user1@domain.com",
-                fullName = "Test User",
-                password = "123456",
-                avatar = "https://randomuser.me/api/portraits/women/0.jpg",
-                username = "testuser1"
-            });
+                dynamic signup = client.Execute(query, new
+                {
+                    email = "test-user1@domain.com",
+                    fullName = "Test User",
+                    password = "123456",
+                    avatar = "https://randomuser.me/api/portraits/women/0.jpg",
+                    username = "testuser9"
+                });
 
-            if (signup != null && signup.error == null)
-            {
-                Console.WriteLine((string)signup.token);
+                // todo
             }
-            else
+            catch (Exception exception)
             {
-                Console.WriteLine("Error - {0}", signup.error);
+                Console.WriteLine("Exception: {0}", exception.Message);
             }
 
             #endregion

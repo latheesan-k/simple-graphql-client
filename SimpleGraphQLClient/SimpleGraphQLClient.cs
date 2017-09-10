@@ -1,67 +1,42 @@
 ﻿using System;
 using RestSharp;
+using System.Net;
 using System.Dynamic;
-using Newtonsoft.Json;
-using RestSharp.Authenticators;
+using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 
 namespace SimpleGraphQLClient
 {
     public class SimpleGraphQLClient
     {
-        private string _GraphQLApiUrl;
+        private RestClient _client;
 
         public SimpleGraphQLClient(string GraphQLApiUrl)
         {
-            _GraphQLApiUrl = GraphQLApiUrl;
+            _client = new RestClient(GraphQLApiUrl);
+
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
         }
 
         public dynamic Execute(string query, object variables = null, Dictionary<string, string> additionalHeaders = null)
         {
-            try
-            {
-                var request = new RestRequest("/", Method.POST);
-                request.RequestFormat = DataFormat.Json;
-
-                var requestBody = JsonConvert.SerializeObject(new GraphQLQuery()
-                {
-                    query = query,
-                    variables = variables,
-                });
-
-                request.AddBody(requestBody);
-
-                return CallApiServer<dynamic>(request, additionalHeaders);
-            }
-            catch (Exception exception)
-            {
-                dynamic errorResult = new ExpandoObject();
-                errorResult.error = exception.Message;
-
-                return errorResult;
-            }
-        }
-
-        private T CallApiServer<T>(RestRequest request, Dictionary<string, string> additionalHeaders) where T : new ()
-        {
-            var client = new RestClient(_GraphQLApiUrl);
+            var request = new RestRequest("/", Method.POST);
 
             if (additionalHeaders != null && additionalHeaders.Count > 0)
             {
-                foreach (var AdditionalHeader in additionalHeaders)
+                foreach (var additionalHeader in additionalHeaders)
                 {
-                    request.AddParameter(AdditionalHeader.Key, AdditionalHeader.Value, ParameterType.GetOrPost);
+                    request.AddHeader(additionalHeader.Key, additionalHeader.Value);
                 }
             }
 
-            var response = client.Execute<T>(request);
-
-            if (response.ErrorException != null)
+            request.AddJsonBody(new
             {
-                throw response.ErrorException;
-            }
+                query = query,
+                variables = variables
+            });
 
-            return response.Data;
+            return JObject.Parse(_client.Execute(request).Content);
         }
     }
 }
