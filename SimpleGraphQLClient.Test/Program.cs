@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace SimpleGraphQLClient.Test
 {
@@ -7,10 +8,11 @@ namespace SimpleGraphQLClient.Test
         static void Main(string[] args)
         {
             var client = new SimpleGraphQLClient("https://tweetserver.dynamic-dns.net/graphql");
+            var token = "";
 
             #region Register user
 
-            var query = @"
+            var signupQuery = @"
                 mutation signup (
                     $fullName: String!
                     $email: String!
@@ -32,20 +34,73 @@ namespace SimpleGraphQLClient.Test
 
             try
             {
-                dynamic signup = client.Execute(query, new
+                var randomString = Guid.NewGuid().ToString().Replace("-", string.Empty).Substring(0, 16);
+
+                var result = client.Execute(signupQuery, new
                 {
-                    email = "test-user1@domain.com",
+                    email = "test-"+ randomString + "@domain.com",
                     fullName = "Test User",
                     password = "123456",
                     avatar = "https://randomuser.me/api/portraits/women/0.jpg",
-                    username = "testuser9"
+                    username = randomString
                 });
 
-                // todo
+                if (result.errors == null)
+                {
+                    token = result.data["signup"].token;
+
+                    Console.WriteLine("signup: Token = {0}", token);
+                }
+                else
+                {
+                    Console.WriteLine("signup Error: {0}", result.errors[0].message);
+                }
             }
             catch (Exception exception)
             {
-                Console.WriteLine("Exception: {0}", exception.Message);
+                Console.WriteLine("signup Exception: {0}", exception.Message);
+            }
+
+            #endregion
+
+            #region Get tweets
+
+            var getTweetsQuery = @"
+                {
+                    getTweets {
+                        _id
+                        text
+                        createdAt
+                        favoriteCount
+                        user {
+                            username
+                            avatar
+                            lastName
+                            firstName
+                        }
+                    }
+                }
+            ";
+
+            try
+            {
+                var result = client.Execute(getTweetsQuery, null, new Dictionary<string, string>()
+                {
+                    { "authorization", "Bearer " + token }
+                });
+
+                if (result.errors == null)
+                {
+                    Console.WriteLine("getTweets: {0}", result.data["getTweets"].ToString());
+                }
+                else
+                {
+                    Console.WriteLine("getTweets Error: {0}", result.errors[0].message);
+                }
+            }
+            catch (Exception exception)
+            {
+                Console.WriteLine("getTweets Exception: {0}", exception.Message);
             }
 
             #endregion
