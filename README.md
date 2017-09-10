@@ -1,4 +1,4 @@
-﻿# graphql-net-client
+﻿# simple-graphql-client
 Very simple GraphQL client for .NET/C#. Implemented using [RestSharp](http://restsharp.org) and [Json.NET](https://www.newtonsoft.com/json).
 
 Inspired by https://github.com/bkniffler/graphql-net-client
