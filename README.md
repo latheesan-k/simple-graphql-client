@@ -1,8 +1,12 @@
 ﻿# graphql-net-client
-Very simple GraphQL client for .NET/C#.
-Requires JSON.NET!
+Very simple GraphQL client for .NET/C#. Implemented using RestSharp and Json.NET.
 
 Inspired by https://github.com/bkniffler/graphql-net-client
+
+## Creating New Simple GraphQL Client
+```cs
+var client = new SimpleGraphQLClient("https://tweetserver.dynamic-dns.net/graphql");
+```
 
 ## Query Example
 ```cs
