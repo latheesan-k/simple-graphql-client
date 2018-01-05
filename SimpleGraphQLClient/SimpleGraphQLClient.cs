@@ -18,10 +18,11 @@ namespace SimpleGraphQLClient
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
         }
 
-        public dynamic Execute(string query, object variables = null, Dictionary<string, string> additionalHeaders = null)
+        public dynamic Execute(string query, object variables = null, Dictionary<string, string> additionalHeaders = null, int timeout = 0)
         {
             var request = new RestRequest("/", Method.POST);
-
+			request.Timeout = timeout;
+			
             if (additionalHeaders != null && additionalHeaders.Count > 0)
             {
                 foreach (var additionalHeader in additionalHeaders)
